@@ -1,4 +1,9 @@
 
+// Fix for Node 20 WebSocket issue on Render
+if (typeof WebSocket === 'undefined') {
+  global.WebSocket = require('ws');
+}
+
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -13,8 +18,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "nabeel-secret-2024";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
+console.log("Starting with SUPABASE_URL:", SUPABASE_URL ? "FOUND" : "MISSING");
+console.log("Starting with SUPABASE_KEY:", SUPABASE_KEY ? "FOUND" : "MISSING");
+
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error("Missing SUPABASE_URL or SUPABASE_KEY in .env");
+  console.error("Missing SUPABASE_URL or SUPABASE_KEY");
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -23,10 +31,9 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Nabeel Pharmacy Backend - SUPABASE VERSION - Running Online! /api/medicines, /api/dashboard working");
+  res.send("Nabeel Pharmacy Backend - SUPABASE VERSION FIXED - Running Online! /api/medicines working");
 });
 
-// LOGIN
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   const { data: users } = await supabase.from("users").select("*").eq("username", username).limit(1);
@@ -38,7 +45,6 @@ app.post("/api/login", async (req, res) => {
   res.json({ token, username: user.username });
 });
 
-// DASHBOARD
 app.get("/api/dashboard", async (req, res) => {
   try {
     const { count: totalMedicines } = await supabase.from("medicines").select("*", { count: "exact", head: true });
@@ -63,7 +69,6 @@ app.get("/api/alerts/expiry", async (req, res) => {
   res.json(data || []);
 });
 
-// MEDICINES
 app.get("/api/medicines", async (req, res) => {
   const { data, error } = await supabase.from("medicines").select("*").order("created_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
@@ -92,7 +97,6 @@ app.delete("/api/medicines/:id", async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
-// CUSTOMERS
 app.get("/api/customers", async (req, res) => {
   const { data } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
   res.json(data || []);
@@ -103,7 +107,6 @@ app.post("/api/customers", async (req, res) => {
   res.json(data);
 });
 
-// SALES
 app.get("/api/sales", async (req, res) => {
   const { data } = await supabase.from("sales").select("*").order("created_at", { ascending: false });
   res.json(data || []);
@@ -124,7 +127,6 @@ app.post("/api/sales", async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PURCHASES
 app.get("/api/purchases", async (req, res) => {
   const { data } = await supabase.from("purchases").select("*").order("created_at", { ascending: false });
   res.json(data || []);
@@ -150,4 +152,4 @@ app.get("/api/reports/sales", async (req, res) => {
   res.json(data || []);
 });
 
-app.listen(PORT, () => console.log("SUPABASE SERVER running on port " + PORT));
+app.listen(PORT, () => console.log("SUPABASE SERVER FIXED running on port " + PORT));
