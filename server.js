@@ -199,7 +199,7 @@ app.get("/api/reports/sales", (req, res) => {
 });
 
 function startServer() {
-  app.listen(PORT, () => {.
+  app.listen(PORT, () => {
     console.log(`Server running on port ${PORT} - ONLINE READY`);
   });
 }
